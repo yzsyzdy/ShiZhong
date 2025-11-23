@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>12小时制时钟与闹钟</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            padding: 20px;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 900px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        @media (min-width: 768px) {
+            .container {
+                flex-direction: row;
+            }
+        }
+        
+        .clock-section {
+            flex: 1;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .features-section {
+            flex: 1;
+            padding: 30px;
+            background: #f8f9fa;
+            border-left: 1px solid #e9ecef;
+        }
+        
+        .time {
+            font-size: 64px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            color: #2575fc;
+        }
+        
+        .ampm {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+        
+        .am {
+            background: rgba(76, 217, 100, 0.7);
+            color: white;
+        }
+        
+        .pm {
+            background: rgba(255, 59, 48, 0.7);
+            color: white;
+        }
+        
+        .date {
+            font-size: 20px;
+            opacity: 0.9;
+            margin-top: 15px;
+            color: #495057;
+        }
+        
+        .weekday {
+            font-size: 18px;
+            opacity: 0.8;
+            margin-top: 5px;
+            color: #6c757d;
+        }
+        
+        h2 {
+            margin-bottom: 20px;
+            color: #2575fc;
+            text-align: center;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 16px;
+            color: #6c757d;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            color: #2575fc;
+            border-bottom: 2px solid #2575fc;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .alarm-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .time-inputs {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .time-inputs select {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .alarm-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .alarm-label input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .alarm-form button {
+            padding: 12px;
+            background: #2575fc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        .alarm-form button:hover {
+            background: #1a68e0;
+        }
+        
+        .alarm-list {
+            list-style-type: none;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .alarm-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: white;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .alarm-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .alarm-time {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2575fc;
+        }
+        
+        .alarm-label-text {
+            font-size: 14px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .alarm-countdown {
+            font-size: 14px;
+            color: #ff3b30;
+            font-weight: bold;
+        }
+        
+        .alarm-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .alarm-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .delete-alarm {
+            color: #ff3b30;
+        }
+        
+        .toggle-alarm {
+            color: #6c757d;
+        }
+        
+        .active-alarm {
+            border-left: 4px solid #2575fc;
+        }
+        
+        .no-alarms {
+            text-align: center;
+            color: #6c757d;
+            padding: 20px;
+        }
+        
+        .alarm-ringing {
+            animation: pulse 1s infinite;
+            background-color: #ffebee;
+        }
+        
+        @keyframes pulse {
+            0% { background-color: #ffebee; }
+            50% { background-color: #ffcdd2; }
+            100% { background-color: #ffebee; }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .modal h3 {
+            margin-bottom: 15px;
+            color: #2575fc;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .modal-buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        #snoozeBtn {
+            background: #2575fc;
+            color: white;
+        }
+        
+        #dismissBtn {
+            background: #6c757d;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="clock-section">
+            <h2>12小时制时钟</h2>
+            <div class="time" id="time">00:00:00</div>
+            <div>
+                <span class="ampm" id="ampm">上午</span>
+            </div>
+            <div class="date" id="date">2023年1月1日</div>
+            <div class="weekday" id="weekday">星期日</div>
+        </div>
+        
+        <div class="features-section">
+            <h2>闹钟功能</h2>
+            
+            <div class="tabs">
+                <button class="tab active" data-tab="alarms">闹钟设置</button>
+                <button class="tab" data-tab="active-alarms">活跃闹钟</button>
+            </div>
+            
+            <div class="tab-content active" id="alarms">
+                <div class="alarm-form">
+                    <div class="time-inputs">
+                        <select id="alarmHour">
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                        </select>
+                        <span>:</span>
+                        <select id="alarmMinute">
+                            <option value="0">00</option>
+                            <option value="5">05</option>
+                            <option value="10">10</option>
+                            <option value="15">15</option>
+                            <option value="20">20</option>
+                            <option value="25">25</option>
+                            <option value="30">30</option>
+                            <option value="35">35</option>
+                            <option value="40">40</option>
+                            <option value="45">45</option>
+                            <option value="50">50</option>
+                            <option value="55">55</option>
+                        </select>
+                        <select id="alarmAmPm">
+                            <option value="AM">上午</option>
+                            <option value="PM">下午</option>
+                        </select>
+                    </div>
+                    <div class="alarm-label">
+                        <input type="text" id="alarmLabel" placeholder="闹钟标签 (可选)">
+                    </div>
+                    <button id="setAlarm">设置闹钟</button>
+                </div>
+                
+                <h3>已设置的闹钟</h3>
+                <ul class="alarm-list" id="alarmList">
+                    <!-- 闹钟将通过JS动态添加 -->
+                </ul>
+            </div>
+            
+            <div class="tab-content" id="active-alarms">
+                <div id="activeAlarmsList">
+                    <!-- 活跃闹钟将通过JS动态添加 -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 闹钟提醒模态框 -->
+    <div class="modal" id="alarmModal">
+        <div class="modal-content">
+            <h3>闹钟提醒</h3>
+            <p id="alarmMessage">时间到了！</p>
+            <audio id="alarmSound" loop>
+                <source src="https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3" type="audio/mpeg">
+            </audio>
+            <div class="modal-buttons">
+                <button id="snoozeBtn">稍后提醒 (5分钟)</button>
+                <button id="dismissBtn">关闭闹钟</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 时钟功能
+        function updateClock() {
+            const now = new Date();
+            
+            // 获取时间
+            let hours = now.getHours();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+            
+            // 转换为12小时制并确定上下午
+            const ampm = hours >= 12 ? '下午' : '上午';
+            hours = hours % 12 || 12; // 将0转换为12
+            
+            // 格式化时间
+            const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // 更新显示
+            document.getElementById('time').textContent = timeString;
+            const ampmElement = document.getElementById('ampm');
+            ampmElement.textContent = ampm;
+            ampmElement.className = ampm === '上午' ? 'ampm am' : 'ampm pm';
+            
+            // 更新日期
+            const year = now.getFullYear();
+            const month = now.getMonth() + 1;
+            const day = now.getDate();
+            document.getElementById('date').textContent = `${year}年${month}月${day}日`;
+            
+            // 更新星期
+            const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            document.getElementById('weekday').textContent = weekdays[now.getDay()];
+        }
+        
+        // 初始设置并每秒更新
+        updateClock();
+        setInterval(updateClock, 1000);
+        
+        // 闹钟功能
+        document.addEventListener('DOMContentLoaded', function() {
+            // 标签页切换
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // 移除所有活动标签和内容
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    // 激活当前标签和内容
+                    this.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+            
+            // 闹钟管理
+            const alarmHour = document.getElementById('alarmHour');
+            const alarmMinute = document.getElementById('alarmMinute');
+            const alarmAmPm = document.getElementById('alarmAmPm');
+            const alarmLabel = document.getElementById('alarmLabel');
+            const setAlarmBtn = document.getElementById('setAlarm');
+            const alarmList = document.getElementById('alarmList');
+            const activeAlarmsList = document.getElementById('activeAlarmsList');
+            const alarmModal = document.getElementById('alarmModal');
+            const alarmMessage = document.getElementById('alarmMessage');
+            const alarmSound = document.getElementById('alarmSound');
+            const snoozeBtn = document.getElementById('snoozeBtn');
+            const dismissBtn = document.getElementById('dismissBtn');
+            
+            // 从本地存储加载闹钟
+            let alarms = JSON.parse(localStorage.getItem('alarms')) || [];
+            let activeAlarm = null;
+            
+            // 设置闹钟
+            setAlarmBtn.addEventListener('click', function() {
+                const hour = parseInt(alarmHour.value);
+                const minute = parseInt(alarmMinute.value);
+                const ampm = alarmAmPm.value;
+                const label = alarmLabel.value.trim() || '闹钟';
+                
+                // 转换为24小时制
+                let hour24 = hour;
+                if (ampm === 'PM' && hour !== 12) {
+                    hour24 = hour + 12;
+                } else if (ampm === 'AM' && hour === 12) {
+                    hour24 = 0;
+                }
+                
+                // 创建闹钟对象
+                const alarm = {
+                    id: Date.now(),
+                    hour: hour24,
+                    minute: minute,
+                    label: label,
+                    active: true,
+                    timeSet: new Date().toISOString()
+                };
+                
+                alarms.push(alarm);
+                saveAlarms();
+                renderAlarms();
+                
+                // 重置表单
+                alarmLabel.value = '';
+            });
+            
+            // 保存闹钟到本地存储
+            function saveAlarms() {
+                localStorage.setItem('alarms', JSON.stringify(alarms));
+            }
+            
+            // 渲染闹钟列表
+            function renderAlarms() {
+                alarmList.innerHTML = '';
+                activeAlarmsList.innerHTML = '';
+                
+                if (alarms.length === 0) {
+                    alarmList.innerHTML = '<div class="no-alarms">暂无闹钟</div>';
+                    activeAlarmsList.innerHTML = '<div class="no-alarms">暂无活跃闹钟</div>';
+                    return;
+                }
+                
+                const now = new Date();
+                let hasActiveAlarms = false;
+                
+                alarms.forEach((alarm, index) => {
+                    // 格式化时间显示
+                    let displayHour = alarm.hour % 12 || 12;
+                    const displayAmPm = alarm.hour >= 12 ? '下午' : '上午';
+                    const displayTime = `${displayHour}:${alarm.minute.toString().padStart(2, '0')} ${displayAmPm}`;
+                    
+                    // 创建闹钟项
+                    const li = document.createElement('li');
+                    li.className = `alarm-item ${alarm.active ? 'active-alarm' : ''}`;
+                    
+                    // 计算剩余时间
+                    let timeRemaining = '';
+                    if (alarm.active) {
+                        const alarmTime = new Date();
+                        alarmTime.setHours(alarm.hour, alarm.minute, 0, 0);
+                        
+                        // 如果闹钟时间已过，设置为明天
+                        if (alarmTime < now) {
+                            alarmTime.setDate(alarmTime.getDate() + 1);
+                        }
+                        
+                        const diffMs = alarmTime - now;
+                        const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+                        const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                        
+                        timeRemaining = `剩余: ${diffHrs}小时${diffMins}分钟`;
+                        hasActiveAlarms = true;
+                    }
+                    
+                    li.innerHTML = `
+                        <div class="alarm-info">
+                            <div class="alarm-time">${displayTime}</div>
+                            <div class="alarm-label-text">${alarm.label}</div>
+                            ${alarm.active ? `<div class="alarm-countdown">${timeRemaining}</div>` : ''}
+                        </div>
+                        <div class="alarm-actions">
+                            <button class="toggle-alarm" data-id="${alarm.id}">${alarm.active ? '关闭' : '开启'}</button>
+                            <button class="delete-alarm" data-id="${alarm.id}">删除</button>
+                        </div>
+                    `;
+                    
+                    alarmList.appendChild(li);
+                    
+                    // 添加到活跃闹钟列表
+                    if (alarm.active) {
+                        const activeLi = li.cloneNode(true);
+                        activeAlarmsList.appendChild(activeLi);
+                    }
+                });
+                
+                if (!hasActiveAlarms) {
+                    activeAlarmsList.innerHTML = '<div class="no-alarms">暂无活跃闹钟</div>';
+                }
+            }
+            
+            // 闹钟操作
+            alarmList.addEventListener('click', function(e) {
+                const id = parseInt(e.target.getAttribute('data-id'));
+                if (!id) return;
+                
+                if (e.target.classList.contains('delete-alarm')) {
+                    // 删除闹钟
+                    alarms = alarms.filter(alarm => alarm.id !== id);
+                    saveAlarms();
+                    renderAlarms();
+                } else if (e.target.classList.contains('toggle-alarm')) {
+                    // 切换闹钟状态
+                    const alarm = alarms.find(a => a.id === id);
+                    if (alarm) {
+                        alarm.active = !alarm.active;
+                        saveAlarms();
+                        renderAlarms();
+                    }
+                }
+            });
+            
+            // 活跃闹钟列表操作
+            activeAlarmsList.addEventListener('click', function(e) {
+                const id = parseInt(e.target.getAttribute('data-id'));
+                if (!id) return;
+                
+                if (e.target.classList.contains('delete-alarm')) {
+                    // 删除闹钟
+                    alarms = alarms.filter(alarm => alarm.id !== id);
+                    saveAlarms();
+                    renderAlarms();
+                } else if (e.target.classList.contains('toggle-alarm')) {
+                    // 切换闹钟状态
+                    const alarm = alarms.find(a => a.id === id);
+                    if (alarm) {
+                        alarm.active = !alarm.active;
+                        saveAlarms();
+                        renderAlarms();
+                    }
+                }
+            });
+            
+            // 检查闹钟是否触发
+            function checkAlarms() {
+                const now = new Date();
+                const currentHour = now.getHours();
+                const currentMinute = now.getMinutes();
+                
+                alarms.forEach(alarm => {
+                    if (alarm.active && alarm.hour === currentHour && alarm.minute === currentMinute) {
+                        // 触发闹钟
+                        triggerAlarm(alarm);
+                    }
+                });
+            }
+            
+            // 触发闹钟
+            function triggerAlarm(alarm) {
+                activeAlarm = alarm;
+                alarmMessage.textContent = `${alarm.label} - 时间到了！`;
+                
+                // 显示模态框
+                alarmModal.style.display = 'flex';
+                
+                // 播放声音
+                alarmSound.play().catch(e => {
+                    console.log('音频播放失败:', e);
+                });
+            }
+            
+            // 稍后提醒
+            snoozeBtn.addEventListener('click', function() {
+                // 关闭当前闹钟
+                alarmModal.style.display = 'none';
+                alarmSound.pause();
+                alarmSound.currentTime = 0;
+                
+                // 设置5分钟后再次提醒
+                if (activeAlarm) {
+                    const snoozeTime = new Date();
+                    snoozeTime.setMinutes(snoozeTime.getMinutes() + 5);
+                    
+                    const snoozeAlarm = {
+                        id: Date.now(),
+                        hour: snoozeTime.getHours(),
+                        minute: snoozeTime.getMinutes(),
+                        label: `${activeAlarm.label} (稍后提醒)`,
+                        active: true,
+                        timeSet: new Date().toISOString()
+                    };
+                    
+                    alarms.push(snoozeAlarm);
+                    saveAlarms();
+                    renderAlarms();
+                    
+                    activeAlarm = null;
+                }
+            });
+            
+            // 关闭闹钟
+            dismissBtn.addEventListener('click', function() {
+                alarmModal.style.display = 'none';
+                alarmSound.pause();
+                alarmSound.currentTime = 0;
+                
+                // 关闭当前闹钟
+                if (activeAlarm) {
+                    const alarm = alarms.find(a => a.id === activeAlarm.id);
+                    if (alarm) {
+                        alarm.active = false;
+                        saveAlarms();
+                        renderAlarms();
+                    }
+                    activeAlarm = null;
+                }
+            });
+            
+            // 初始化
+            renderAlarms();
+            
+            // 每分钟检查一次闹钟
+            setInterval(checkAlarms, 1000);
+            
+            // 每秒更新一次剩余时间显示
+            setInterval(renderAlarms, 1000);
+        });
+    </script>
+</body>
+</html>
